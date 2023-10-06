@@ -9,30 +9,27 @@ router = APIRouter(prefix="/posts", tags=['Posts'],)
 
 
 @router.get("/", response_model=List[schema.Post])
-def get_posts(db: Session = Depends(get_db)):
-    # cursor.execute("""SELECT * FROM posts""")
-    # posts = cursor.fetchall()
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+
+    print(current_user.email)
     posts = db.query(models.Post).all()
     return posts
 
-# ROUTE TO CREATE POST
-# NOTE: we didn't include the id in the schema because the id is useful only to the backend, the user need not hassle with identification, hence the creation of identity
 
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_posts(post: schema.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schema.Post)
-def create_posts(post: schema.PostCreate, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
-
+    print(current_user.email)
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
-    # since we cannot return the submitted querry like we did with traditional sql, we use this technique that refreshes our variable and chagnges it's values.
     db.refresh(new_post)
     return new_post
 
 
 # ROUTE TO GET THE LATEST POST
 @router.get("/latest", response_model=schema.Post)
-def get_latest_post(db: Session = Depends(get_db)):
+def get_latest_post(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
     latest_post = db.query(models.Post).order_by(desc(models.Post.id)).first()
     return latest_post
@@ -41,22 +38,18 @@ def get_latest_post(db: Session = Depends(get_db)):
 
 
 @router.get("/{id}", response_model=schema.Post)
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'post with id: {id} was not found')
-
-        # response.status_code = status.HTTP_404_NOT_FOUND
-        # return {"message": "You sure that id exist?"}
     return post
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
+def delete_post(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # deleting post
     post = db.query(models.Post).filter(models.Post.id == id)
-
     if post.first() == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
@@ -66,7 +59,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}", response_model=schema.Post)
-def update_post(id: int, post: schema.PostCreate, db: Session = Depends(get_db)):
+def update_post(id: int, post: schema.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
     post_to_update = post_query.first()
