@@ -16,8 +16,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # we will later inherit this base class to create db models. I believe schemas.
 Base = declarative_base()
 
-# WE CREATE A DEPENDENCY:
 
+# WE CREATE A DEPENDENCY:
 
 def get_db():
     db = SessionLocal()

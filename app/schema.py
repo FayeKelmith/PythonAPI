@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 # pydantic schema to handle request structure
 
@@ -22,4 +22,27 @@ class Post(PostBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+# Pydantic model for creating user:
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+# Pydantic model for response to user
+
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
