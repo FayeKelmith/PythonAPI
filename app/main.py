@@ -1,10 +1,24 @@
 from fastapi import FastAPI
-from . import models, config
-from .database import engine
+from fastapi.middleware.cors import CORSMiddleware
+# from .database import engine
 from .routers import post, user, auth, vote
 app = FastAPI()
 
-models.Base.metadata.create_all(bind=engine)
+# if it is meant only for a set of people with specific domain properties, maybe a network.
+origins = ["*"]
+[
+    "https://www.google.com"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+
+)
+# used to lad our database using sqlalchemy
+# models.Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router)
 app.include_router(post.router)
