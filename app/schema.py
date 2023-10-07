@@ -1,9 +1,10 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
-
+from pydantic.types import conint
 
 # Pydantic model for creating user:
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -37,25 +38,34 @@ class TokenData(BaseModel):
 # pydantic schema to handle request structure
 
 
+class Vote(BaseModel):
+    post_id: int
+    dir: conint(le=1, ge=0)
+
+
 class PostBase(BaseModel):
     title: str
     content: str
     published: bool = False
-
-# AIM: to have granully control
 
 
 class PostCreate(PostBase):
     pass
 
 
-# PYdantic for response
-
 class Post(PostBase):
     id: int
     created_at: datetime
     user_id: int
     owner: UserOut
+
+    class Config:
+        from_attributes = True
+
+
+class PostOut(BaseModel):
+    post: Post
+    votes: int
 
     class Config:
         from_attributes = True
